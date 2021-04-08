@@ -200,10 +200,7 @@ WordSearch.Game = function (game)
 	this.wordList = {};
 
 	// THE DIMENSIONS OF THE WORD SEARCH, IN LETTERS (NOT PIXELS)
-	// YOU CAN SET A FIXED SIZE HERE.
-	// OR SET TO -1 MEANS IT'LL ADAPT TO FIT THE LONGEST WORD IN THE WORDS ARRAY.
-	this.puzzleWidth = -1;
-	this.puzzleHeight = -1;
+	this.puzzleWidth = null;
 
 	// THE SIZE OF EACH LETTER SPRITE SHEET, IN PIXELS
 	this.tileWidth = 100;
@@ -248,38 +245,23 @@ WordSearch.Game.prototype = {
 
 	create: function()
 		{
+		// SETTING THE BACKGROUND COLOR
 		this.stage.backgroundColor = "#00507e";
 
-		// GENERATING A NEW WORD SEARCH PUZZLE AND STORING THE SIZE OF IT.
-		if (this.puzzleWidth !== -1)
-			{
-			this.puzzle = wordfind.newPuzzle(this.words, { width: this.puzzleWidth, height: this.puzzleHeight });
-			}
-			else
-			{
-			this.puzzle = wordfind.newPuzzle(this.words);
-			this.puzzleWidth = this.puzzle[0].length;
-			this.puzzleHeight = this.puzzle.length;
-			}
+		// GENERATING A NEW WORD SEARCH PUZZLE AND STORING THE SIZE OF IT
+		this.puzzle = wordfind.newPuzzle(this.words);
+		this.puzzleWidth = this.puzzle[0].length;
 
-		// Solve the puzzle (i.e. find all of the words within it, and store it)
+		// SOLVING THE PUZZLE (FINDING ALL OF THE WORDS WITHIN IT AND STORING THE RESULT)
 		var solution = wordfind.solve(this.puzzle, this.words);
 		this.solution = solution.found;
 
-		// Un-comment these to Debug the puzzle, the first outputs the puzzle to the console
-		// The second outputs the answers object
-
-		// wordfind.print(this.puzzle);
-		// console.log(this.solution);
-
-		// Create the letter tile grid
+		// CREATING THE LETTER TILE GRID
+		this.grid = this.add.group();
 
 		var x = 0;
 		var y = 0;
 		var _this = this;
-
-		this.grid = this.add.group();
-		this.grid.inputEnableChildren = true;
 
 		this.puzzle.forEach(function(row)
 			{
@@ -287,11 +269,11 @@ WordSearch.Game.prototype = {
 				{
 				var tile = _this.grid.create(x, y, letter.toUpperCase(), 0);
 
-				tile.dataCustomrow = x / _this.tileWidth;
-				tile.dataCustomcolumn = y / _this.tileHeight;
-				tile.dataCustomwords = {};
-				tile.dataCustomletter = letter.toUpperCase();
-				tile.dataCustomstartWord = false;
+				tile.dataCustomRow = x / _this.tileWidth;
+				tile.dataCustomColumn = y / _this.tileHeight;
+				tile.dataCustomWords = {};
+				tile.dataCustomLetter = letter.toUpperCase();
+				tile.dataCustomStartWord = false;
 
 				tile.inputEnabled = true;
 
@@ -307,45 +289,38 @@ WordSearch.Game.prototype = {
 			y += _this.tileHeight;
 			});
 
+		y = 10;
+
 		// Flag all of the starting letters in the grid
 		this.solution.forEach(function(entry)
 			{
 			// Based on the grid position we can get the tile index
 			var index = (entry.y * _this.puzzleWidth) + entry.x;
 			var tile = _this.grid.getChildAt(index);
-			tile.dataCustomstartWord = true;
-			tile.dataCustomwords[entry.word] = { orientation: entry.orientation, length: entry.word.length };
+			tile.dataCustomStartWord = true;
+			tile.dataCustomWords[entry.word] = { orientation: entry.orientation, length: entry.word.length };
+
+			// DRAWING THE WORD SHADOW IN THE LIST ON THE RIGHT SIDE OF THE SCREEN
+			var tempShadow = _this.add.bitmapText(500 + 2, y - 3, "azo", entry.word, 28);
+			tempShadow.tint = 0x000000;
+
+			// DRAWING THE WORD IN THE LIST ON THE RIGHT SIDE OF THE SCREEN
+			_this.wordList[entry.word] = _this.add.bitmapText(500, y - 4, "azo", entry.word, 28);
+
+			// UPDATING THE Y VALUE FOR THE NEXT WORD
+			y += 28;
 			});
 
-		// This controls the position and scale of the word search grid
-		// Setting the width / height automatically scales the Group
-		// If you remove this, the tiles will be displayed at their full size
-		// Use it to position the grid within your game, and make sure it fits
-		// no matter how many words are in it.
-
+		// RESIZING AND RELOCATING THE LETTER TILE GRID
 		this.grid.x = 9;
 		this.grid.y = 9;
 		this.grid.width = 480;
 		this.grid.height = 472;
 
-		// Display the words to find down the right-hand side, and add to the wordList object
-		y = 10;
-		this.solution.forEach(function(entry)
-			{
-			var tempShadow = _this.add.bitmapText(500 + 2, y - 3, 'azo', entry.word, 28);
-			tempShadow.tint = 0x000000;
-
-			// One BitmapText per word (so we can change their color when found)
-			_this.wordList[entry.word] = _this.add.bitmapText(500, y - 4, 'azo', entry.word, 28);
-			y += 28;
-			});
-
-		// The Graphics object that controls the letter selection line
+		// ADDING THE DRAW LINE
 		this.drawLine = this.add.graphics(0, 0);
 
-		// This starts a callback going, that updates whenever the mouse moves,
-		// and calls updateDrawLine. All of the main game logic happens as a result
-		// of events triggered within here, and the letter tile input handlers.
+		// SETTING A CALLBACK WHEN THE MOUSE MOVES FOR DRAWING THE DRAW LINE
 		this.input.addMoveCallback(this.updateDrawLine, this);
 
 		// ADDING THE RESTART BUTTON
@@ -393,7 +368,7 @@ WordSearch.Game.prototype = {
 		this.isSelecting = false;
 
 		// Let's check to see if they selected an actual word :)
-		if (this.firstLetter && this.endLetter && this.firstLetter !== this.endLetter && (this.firstLetter.dataCustomstartWord || this.endLetter.dataCustomstartWord) && this.checkLetterAlignment(this.endLetter))
+		if (this.firstLetter && this.endLetter && this.firstLetter !== this.endLetter && (this.firstLetter.dataCustomStartWord || this.endLetter.dataCustomStartWord) && this.checkLetterAlignment(this.endLetter))
 			{
 			var result = this.checkSelectedLetters();
 
@@ -410,7 +385,7 @@ WordSearch.Game.prototype = {
 				}
 			}
 
-		this.grid.setAll('frame', 0);
+		this.grid.setAll("frame", 0);
 		this.clearLine();
 		},
 
@@ -447,7 +422,7 @@ WordSearch.Game.prototype = {
 
 				if (selection && selection.letters.length > 0)
 					{
-					this.grid.setAll('frame', 0);
+					this.grid.setAll("frame", 0);
 
 					selection.letters.forEach(function(sprite)
 						{
@@ -477,10 +452,10 @@ WordSearch.Game.prototype = {
 
 	checkLetterAlignment: function (letter)
 		{
-		var startRow = this.firstLetter.dataCustomrow;
-		var startColumn = this.firstLetter.dataCustomcolumn;
-		var endRow = letter.dataCustomrow;
-		var endColumn = letter.dataCustomcolumn;
+		var startRow = this.firstLetter.dataCustomRow;
+		var startColumn = this.firstLetter.dataCustomColumn;
+		var endRow = letter.dataCustomRow;
+		var endColumn = letter.dataCustomColumn;
 
 		return (startColumn === endColumn || startRow === endRow || Math.abs(endColumn - startColumn) === Math.abs(endRow - startRow));
 		},
@@ -502,45 +477,45 @@ WordSearch.Game.prototype = {
 		var last = this.endLetter;
 		var tile;
 		var letters = [];
-		var selectedWord = '';
+		var selectedWord = "";
 		var x, y, top, bottom, left, right;
 
 		// Let's get all the letters between the first and end letters
 
-		if (first.dataCustomrow === last.dataCustomrow)
+		if (first.dataCustomRow === last.dataCustomRow)
 			{
 			// Vertical grab
-			top = Math.min(first.dataCustomcolumn, last.dataCustomcolumn);
-			bottom = Math.max(first.dataCustomcolumn, last.dataCustomcolumn);
+			top = Math.min(first.dataCustomColumn, last.dataCustomColumn);
+			bottom = Math.max(first.dataCustomColumn, last.dataCustomColumn);
 
 			for (y = top; y <= bottom; y++)
 				{
-				tile = this.getLetterAt(first.dataCustomrow, y);
+				tile = this.getLetterAt(first.dataCustomRow, y);
 				letters.push(tile);
-				selectedWord = selectedWord.concat(tile.dataCustomletter);
+				selectedWord = selectedWord.concat(tile.dataCustomLetter);
 				}
 			}
-		else if (first.dataCustomcolumn === last.dataCustomcolumn)
+		else if (first.dataCustomColumn === last.dataCustomColumn)
 			{
 			// Horizontal grab
-			left = Math.min(first.dataCustomrow, last.dataCustomrow);
-			right = Math.max(first.dataCustomrow, last.dataCustomrow);
+			left = Math.min(first.dataCustomRow, last.dataCustomRow);
+			right = Math.max(first.dataCustomRow, last.dataCustomRow);
 
 			for (x = left; x <= right; x++)
 				{
-				tile = this.getLetterAt(x, first.dataCustomcolumn);
+				tile = this.getLetterAt(x, first.dataCustomColumn);
 				letters.push(tile);
-				selectedWord = selectedWord.concat(tile.dataCustomletter);
+				selectedWord = selectedWord.concat(tile.dataCustomLetter);
 				}
 			}
 		else
 			{
-			top = Math.min(first.dataCustomcolumn, last.dataCustomcolumn);
-			bottom = Math.max(first.dataCustomcolumn, last.dataCustomcolumn);
-			left = Math.min(first.dataCustomrow, last.dataCustomrow);
-			right = Math.max(first.dataCustomrow, last.dataCustomrow);
+			top = Math.min(first.dataCustomColumn, last.dataCustomColumn);
+			bottom = Math.max(first.dataCustomColumn, last.dataCustomColumn);
+			left = Math.min(first.dataCustomRow, last.dataCustomRow);
+			right = Math.max(first.dataCustomRow, last.dataCustomRow);
 
-			if (first.dataCustomcolumn > last.dataCustomcolumn && first.dataCustomrow < last.dataCustomrow)
+			if (first.dataCustomColumn > last.dataCustomColumn && first.dataCustomRow < last.dataCustomRow)
 				{
 				// Diagonal NE grab (up and from left to right)
 				y = bottom;
@@ -549,11 +524,11 @@ WordSearch.Game.prototype = {
 					{
 					tile = this.getLetterAt(x, y);
 					letters.push(tile);
-					selectedWord = selectedWord.concat(tile.dataCustomletter);
+					selectedWord = selectedWord.concat(tile.dataCustomLetter);
 					y--;
 					}
 				}
-			else if (first.dataCustomcolumn < last.dataCustomcolumn && first.dataCustomrow < last.dataCustomrow)
+			else if (first.dataCustomColumn < last.dataCustomColumn && first.dataCustomRow < last.dataCustomRow)
 				{
 				// Diagonal SE grab (down and from left to right)
 				y = top;
@@ -562,11 +537,11 @@ WordSearch.Game.prototype = {
 					{
 					tile = this.getLetterAt(x, y);
 					letters.push(tile);
-					selectedWord = selectedWord.concat(tile.dataCustomletter);
+					selectedWord = selectedWord.concat(tile.dataCustomLetter);
 					y++;
 					}
 				}
-			else if (first.dataCustomcolumn < last.dataCustomcolumn && first.dataCustomrow > last.dataCustomrow)
+			else if (first.dataCustomColumn < last.dataCustomColumn && first.dataCustomRow > last.dataCustomRow)
 				{
 				// Diagonal SW grab (down and from right to left)
 				y = top;
@@ -575,11 +550,11 @@ WordSearch.Game.prototype = {
 					{
 					tile = this.getLetterAt(x, y);
 					letters.push(tile);
-					selectedWord = selectedWord.concat(tile.dataCustomletter);
+					selectedWord = selectedWord.concat(tile.dataCustomLetter);
 					y++;
 					}
 				}
-			else if (first.dataCustomcolumn > last.dataCustomcolumn && first.dataCustomrow > last.dataCustomrow)
+			else if (first.dataCustomColumn > last.dataCustomColumn && first.dataCustomRow > last.dataCustomRow)
 				{
 				// Diagonal NW grab (up and from right to left)
 				y = bottom;
@@ -588,7 +563,7 @@ WordSearch.Game.prototype = {
 					{
 					tile = this.getLetterAt(x, y);
 					letters.push(tile);
-					selectedWord = selectedWord.concat(tile.dataCustomletter);
+					selectedWord = selectedWord.concat(tile.dataCustomLetter);
 					y--;
 					}
 				}
@@ -613,9 +588,9 @@ WordSearch.Game.prototype = {
 			// a....
 			// r....
 
-			var starter = (this.firstLetter.dataCustomstartWord) ? this.firstLetter : this.endLetter;
+			var starter = (this.firstLetter.dataCustomStartWord) ? this.firstLetter : this.endLetter;
 
-			for (var word in starter.dataCustomwords)
+			for (var word in starter.dataCustomWords)
 				{
 				if (word === selection.word || word === selection.inverse)
 					{
@@ -628,7 +603,7 @@ WordSearch.Game.prototype = {
 
 	reverseString: function(string)
 		{
-		return string.split('').reverse().join('');
+		return string.split("").reverse().join("");
 		},
 
 	showToast: function(myText)
