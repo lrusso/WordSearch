@@ -623,6 +623,28 @@ WordSearch.Game.prototype = {
 		}
 	};
 
+// CHECKING EVERY 200 MS IF THE DOCUMENT HAS FOCUS
+setInterval(function()
+	{
+	try
+		{
+		// CHECKING IF THE DOCUMENT HAS FOCUS
+		if(document.hasFocus()==true)
+			{
+			// RESUMING THE GAME
+			game.paused = false;
+			}
+			else
+			{
+			// PAUSING THE GAME
+			game.paused = true;
+			}
+		}
+		catch(err)
+		{
+		}
+	}, 200);
+
 // SETTING THE DEFAULT RENDERER MODE
 var rendererMode = Phaser.WEBGL;
 
