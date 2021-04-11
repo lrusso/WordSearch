@@ -309,6 +309,7 @@ WordSearch.Game.prototype = {
 				tile.dataCustomStartWord = false;
 
 				tile.inputEnabled = true;
+				tile.input.useHandCursor = true;
 				tile.input.pixelPerfectOver = true;
 				tile.input.pixelPerfectClick = true;
 
