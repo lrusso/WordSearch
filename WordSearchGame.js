@@ -17,15 +17,18 @@ function isMobileDevice(){return!!(navigator.userAgent.match(/Android/i)||naviga
 var userLanguage = window.navigator.userLanguage || window.navigator.language;
 
 var STRING_GAMEWON = "";
+var STRING_WORDLIST = "";
 
 // CHECKING THE USER LANGUAGE
 if (userLanguage.substring(0,2)=="es")
 	{
 	STRING_GAMEWON = String.fromCharCode(161) + "Has ganado!";
+	STRING_WORDLIST = ["AMIGA", "APPLE", "ATARI", "COLECO", "COMMODORE", "GOOGLE", "IPHONE", "IPOD", "MACBOOK", "MARIO", "MASTERCHIEF", "MICROSOFT", "MOTOROLA", "MSX", "NES", "NINTENDO", "NOKIA", "PLAYSTATION", "RETRO", "SAMSUNG", "SEGA", "SINCLAIR", "SMARTPHONE", "SONIC", "SPECTRUM", "SUPERFAMICOM", "TABLET", "XBOX"];
 	}
 	else
 	{
 	STRING_GAMEWON = "You Won!";
+	STRING_WORDLIST = ["AMIGA", "APPLE", "ATARI", "COLECO", "COMMODORE", "GOOGLE", "IPHONE", "IPOD", "MACBOOK", "MARIO", "MASTERCHIEF", "MICROSOFT", "MOTOROLA", "MSX", "NES", "NINTENDO", "NOKIA", "PLAYSTATION", "RETRO", "SAMSUNG", "SEGA", "SINCLAIR", "SMARTPHONE", "SONIC", "SPECTRUM", "SUPERFAMICOM", "TABLET", "XBOX"];
 	}
 
 var WordSearch = {showDebug: false};
@@ -191,38 +194,32 @@ WordSearch.Splash.prototype = {
 		}
 	};
 
-WordSearch.Game = function (game) 
+WordSearch.Game = function (game)
 	{
-	this.words = ["ATARI", "AMIGA", "COMMODORE", "SINCLAIR", "SPECTRUM", "NINTENDO", "SEGA", "PLAYSTATION", "XBOX", "COLECO", "RETRO", "SUPERFAMICOM", "NES", "SONIC", "MARIO", "MASTERCHIEF", "MSX"];
-	this.letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+	this.letters = null
+	this.words = null
 
 	this.puzzle = null;
 	this.solution = null;
 
-	// THE BITMAPFONT WORD LIST DOWN THE SIDE
-	this.wordList = {};
+	this.wordList = null;
 
-	// THE DIMENSIONS OF THE WORD SEARCH, IN LETTERS (NOT PIXELS)
 	this.puzzleWidth = null;
 
-	// THE SIZE OF EACH LETTER SPRITE SHEET, IN PIXELS
-	this.tileWidth = 100;
-	this.tileHeight = 100;
+	this.tileWidth = null;
+	this.tileHeight = null;
 
-	// THE SELECTION LINE COLOR AND THICKNESS
-	this.drawLineColor = 0x00ff00;
-	this.drawLineAlpha = 0.6;
-	this.drawLineThickness = 26;
+	this.drawLineColor = null;
+	this.drawLineAlpha = null;
+	this.drawLineThickness = null;
 
-	// A TINT APPLIED TO THE LETTERS WHEN A WORD IS FOUND
-	this.highlightTint = 0xffff00;
+	this.highlightTint = null;
 
-	// BOOLEANS TO CONTROL THE GAME DURING PLAY
 	this.drawLine = null;
-	this.isSelecting = false;
+	this.isSelecting = null;
 	this.firstLetter = null;
 	this.endLetter = null;
-	this.foundWords = [];
+	this.foundWords = null;
 
 	// SCALING THE CANVAS SIZE FOR THE GAME
 	function resizeF()
@@ -242,14 +239,47 @@ WordSearch.Game = function (game)
 
 WordSearch.Game.prototype = {
 
-	preload: function()
+	init: function()
 		{
+		this.letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+		this.words = [];
+
+		this.puzzle = null;
+		this.solution = null;
+
+		// THE BITMAPFONT WORD LIST DOWN THE SIDE
+		this.wordList = {};
+
+		// THE DIMENSIONS OF THE WORD SEARCH, IN LETTERS (NOT PIXELS)
+		this.puzzleWidth = null;
+
+		// THE SIZE OF EACH LETTER SPRITE SHEET, IN PIXELS
+		this.tileWidth = 100;
+		this.tileHeight = 100;
+
+		// THE SELECTION LINE COLOR AND THICKNESS
+		this.drawLineColor = 0x00ff00;
+		this.drawLineAlpha = 0.6;
+		this.drawLineThickness = 26;
+
+		// A TINT APPLIED TO THE LETTERS WHEN A WORD IS FOUND
+		this.highlightTint = 0xffff00;
+
+		// BOOLEANS TO CONTROL THE GAME DURING PLAY
+		this.drawLine = null;
+		this.isSelecting = false;
+		this.firstLetter = null;
+		this.endLetter = null;
+		this.foundWords = [];
 		},
 
 	create: function()
 		{
 		// SETTING THE BACKGROUND COLOR
 		this.stage.backgroundColor = "#00507e";
+
+		// GETTING THE RANDOM WOR DLIST
+		this.getRandomWordList();
 
 		// GENERATING A NEW WORD SEARCH PUZZLE AND STORING THE SIZE OF IT
 		this.puzzle = wordfind.newPuzzle(this.words);
@@ -452,7 +482,7 @@ WordSearch.Game.prototype = {
 
 	gameWon: function ()
 		{
-		this.showToast(STRING_GAMEWON)
+		this.showToast(STRING_GAMEWON);
 		},
 
 	checkLetterAlignment: function (letter)
@@ -609,6 +639,41 @@ WordSearch.Game.prototype = {
 	reverseString: function(string)
 		{
 		return string.split("").reverse().join("");
+		},
+
+	getRandomWordList: function()
+		{
+		var gen_nums = [];
+
+		function in_array(array, el)
+			{
+			for(var i = 0 ; i < array.length; i++)
+				{
+				if(array[i] == el)
+					{
+					return true;
+					}
+				}
+			return false;
+			}
+
+		function get_rand(array)
+			{
+			var rand = array[Math.floor(Math.random()*array.length)];
+			if(!in_array(gen_nums, rand))
+				{
+				gen_nums.push(rand);
+				return rand;
+				}
+			return get_rand(array);
+			}
+
+		for(var i = 0; i < 17; i++)
+			{
+			this.words.push(get_rand(STRING_WORDLIST));
+			}
+
+		this.words.sort();
 		},
 
 	showToast: function(myText)
