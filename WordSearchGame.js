@@ -249,7 +249,7 @@ WordSearch.Game.prototype = {
 		this.solution = null;
 
 		// THE BITMAPFONT WORD LIST DOWN THE SIDE
-		this.wordList = {};
+		this.wordList = [];
 
 		// THE DIMENSIONS OF THE WORD SEARCH, IN LETTERS (NOT PIXELS)
 		this.puzzleWidth = null;
@@ -343,7 +343,7 @@ WordSearch.Game.prototype = {
 			tempShadow.tint = 0x000000;
 
 			// DRAWING THE WORD IN THE LIST ON THE RIGHT SIDE OF THE SCREEN
-			_this.wordList[entry.word] = _this.add.bitmapText(500, y - 4, "azo", entry.word, 28);
+			_this.wordList.push(_this.add.bitmapText(500, y - 4, "azo", entry.word, 28));
 
 			// UPDATING THE Y VALUE FOR THE NEXT WORD
 			y += 28;
@@ -413,11 +413,10 @@ WordSearch.Game.prototype = {
 			if (result)
 				{
 				this.highlightCorrectWord(result);
-				this.foundWords.push(result.word);
 				}
 
 			// Check word list, game won?
-			if (this.foundWords.length === this.solution.length)
+			if (this.foundWords.length == 17)
 				{
 				this.gameWon();
 				}
@@ -439,7 +438,14 @@ WordSearch.Game.prototype = {
 		var _this = this;
 
 		// result contains the sprites of the letters, the word, etc.
-		this.wordList[result.word].tint = this.highlightTint;
+		for (var i=0;i<17;i++)
+			{
+			if (this.wordList[i].text==result.word)
+				{
+				this.wordList[i].tint = this.highlightTint;
+				this.foundWords = this.foundWords + 1;
+				}
+			}
 
 		result.letters.forEach(function(letter)
 			{
