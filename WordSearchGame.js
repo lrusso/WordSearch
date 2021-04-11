@@ -196,8 +196,8 @@ WordSearch.Splash.prototype = {
 
 WordSearch.Game = function (game)
 	{
-	this.letters = null
-	this.words = null
+	this.letters = null;
+	this.words = null;
 
 	this.puzzle = null;
 	this.solution = null;
