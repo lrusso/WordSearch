@@ -438,7 +438,7 @@ WordSearch.Game.prototype = {
 		var _this = this;
 
 		// result contains the sprites of the letters, the word, etc.
-		for (var i=0;i<17;i++)
+		for (var i=0; i<17; i++)
 			{
 			if (this.wordList[i].text==result.word)
 				{
