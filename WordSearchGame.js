@@ -679,7 +679,14 @@ WordSearch.Game.prototype = {
 
 		for(var i = 0; i < 17; i++)
 			{
-			this.words.push(get_rand(STRING_WORDLIST));
+			try
+				{
+				this.words.push(get_rand(STRING_WORDLIST));
+				}
+				catch(err)
+				{
+				this.words.push("ERROR");
+				}
 			}
 
 		this.words.sort();
