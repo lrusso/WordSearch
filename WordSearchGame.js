@@ -279,6 +279,8 @@ WordSearch.Game.prototype = {
 				tile.dataCustomStartWord = false;
 
 				tile.inputEnabled = true;
+				tile.input.pixelPerfectOver = true;
+				tile.input.pixelPerfectClick = true;
 
 				tile.events.onInputDown.add(_this.startLetterSelect, _this);
 				tile.events.onInputUp.add(_this.stopLetterSelect, _this);
