@@ -220,6 +220,7 @@ WordSearch.Game = function (game)
 	this.firstLetter = null;
 	this.endLetter = null;
 	this.foundWords = null;
+	this.lastOver = null;
 
 	// SCALING THE CANVAS SIZE FOR THE GAME
 	function resizeF()
@@ -271,6 +272,7 @@ WordSearch.Game.prototype = {
 		this.firstLetter = null;
 		this.endLetter = null;
 		this.foundWords = [];
+		this.lastOver = null;
 		},
 
 	create: function()
@@ -447,6 +449,12 @@ WordSearch.Game.prototype = {
 
 	overLetter: function (letter)
 		{
+		if (this.lastOver!=null)
+			{
+			this.outLetter(this.lastOver);
+			}
+		this.lastOver = letter;
+
 		if (this.isSelecting)
 			{
 			if (this.checkLetterAlignment(letter))
