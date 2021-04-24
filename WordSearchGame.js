@@ -31,7 +31,7 @@ if (userLanguage.substring(0,2)=="es")
 	STRING_WORDLIST = ["ANDROID", "APPLE", "BROWSER", "COMPUTER", "DELL", "DESKTOP", "FERRARI", "GOOGLE", "IPAD", "IPHONE", "LAPTOP", "LINUX", "MACBOOK", "MARIO", "MCLAREN", "MICROSOFT", "MOTOROLA", "NINTENDO", "NOBEL", "NOKIA", "NOTEBOOK", "PLAYSTATION", "RETRO", "SAMSUNG", "SEGA", "SMARTPHONE", "SONIC", "TABLET", "WINDOWS", "XBOX"];
 	}
 
-var WordSearch = {showDebug: false};
+var WordSearch = {};
 
 WordSearch.Preloader = function(){};
 
