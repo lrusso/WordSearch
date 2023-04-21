@@ -280,6 +280,7 @@ WordSearch.Game.prototype = {
 		{
 		// SETTING THE BACKGROUND COLOR
 		this.stage.backgroundColor = "#00507e";
+		document.getElementsByTagName("body")[0].className = "wordsearch_background";
 
 		// GETTING THE RANDOM WOR DLIST
 		this.getRandomWordList();
